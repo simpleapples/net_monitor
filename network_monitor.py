@@ -9,6 +9,7 @@ import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Tuple, Dict
+from logging.handlers import TimedRotatingFileHandler
 
 
 class NetworkMonitor:
@@ -33,13 +34,20 @@ class NetworkMonitor:
         self.logger.info(f"Timeout: {self.timeout}s")
     
     def _setup_logging(self):
-        log_file = self.log_dir / f"network_monitor_{datetime.now().strftime('%Y%m%d')}.log"
+        log_file = self.log_dir / "network_monitor.log"
         
         self.logger = logging.getLogger('NetworkMonitor')
         self.logger.setLevel(logging.INFO)
         
-        fh = logging.FileHandler(log_file, encoding='utf-8')
+        fh = TimedRotatingFileHandler(
+            str(log_file),
+            when='midnight',
+            interval=1,
+            backupCount=365,
+            encoding='utf-8'
+        )
         fh.setLevel(logging.INFO)
+        fh.namer = lambda name: name.replace('.log', '') + '.log'
         
         ch = logging.StreamHandler()
         ch.setLevel(logging.INFO)
